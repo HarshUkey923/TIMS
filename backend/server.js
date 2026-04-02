@@ -2,6 +2,7 @@ import express from "express";
 import  connectDB from "./config/db.js";
 import dotenv from "dotenv"
 import cors from "cors";
+import path from "path";
 
 import AuthRoutes from "./routes/AuthRoutes.js"
 import InternRoutes from "./routes/InternRoutes.js"
@@ -15,6 +16,7 @@ import MentorRoutes from "./routes/MentorRoutes.js"
 dotenv.config();
 
 const app = express()
+const __dirname = path.resolve();
 
 app.use(cors({
   origin: "http://localhost:5173",
@@ -36,6 +38,8 @@ app.use("/api/submissions", SubmissionRoutes);
 app.use("/api/reports", ReportRoutes);
 app.use("/api/hr", HrRoutes);
 app.use("/api/mentor", MentorRoutes);
+
+app.use(express.static(path.join()))
 
 connectDB();
 
