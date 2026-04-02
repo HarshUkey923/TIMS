@@ -18,17 +18,17 @@ dotenv.config();
 const app = express()
 const __dirname = path.resolve();
 
-app.use(cors({
-  origin: "http://localhost:5173",
-  credentials: true,
+if(process.env.NODE_ENV === "production"){
+    app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true,
 }));
+
+}
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads"));
-
-app.get("/", (req, res) => {
-    res.send("Backend is running.")
-})
 
 app.use("/api/auth", AuthRoutes);
 app.use("/api/interns", InternRoutes);
@@ -39,7 +39,13 @@ app.use("/api/reports", ReportRoutes);
 app.use("/api/hr", HrRoutes);
 app.use("/api/mentor", MentorRoutes);
 
-app.use(express.static(path.join()))
+if(process.env.NODE_ENV === "production") {
+    app.use(express.static(path.join(__dirname, "../frontend/dist")))
+
+    app.get("/", (req, res) => {
+        res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"))
+})
+}
 
 connectDB();
 

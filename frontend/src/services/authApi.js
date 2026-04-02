@@ -1,7 +1,9 @@
 import axios from "axios";
+const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001/api/auth" : "/api/auth"
+
 
 const authApi = axios.create({
-    baseURL: "http://localhost:5001/api/auth"
+    baseURL: BASE_URL
 });
 
 export default authApi;
