@@ -9,16 +9,10 @@ import CreateProgram from "./pages/hr/CreateProgram";
 import AssignIntern from "./pages/hr/AssignIntern";
 import AddIntern from "./pages/hr/AddIntern";
 import Details from "./pages/hr/Details";
-import { useEffect } from "react";
 import AddMentor from "./pages/hr/AddMentor";
 
 function App() {
   const role = localStorage.getItem("role");
-
-useEffect(() => {
-  const savedTheme = localStorage.getItem("theme") || "corporate";
-  document.documentElement.setAttribute("data-theme", savedTheme);
-}, []);
 
   return (
     <BrowserRouter>

@@ -18,7 +18,7 @@ dotenv.config();
 const app = express()
 const __dirname = path.resolve();
 
-if(process.env.NODE_ENV === "production"){
+if(process.env.NODE_ENV === "development"){
     app.use(cors({
     origin: "http://localhost:5173",
     credentials: true,
