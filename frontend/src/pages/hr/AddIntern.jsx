@@ -1,82 +1,53 @@
 import { useState } from "react";
 import api from "../../services/api";
-import Navbar from "../../components/Navbar";
-import { Link } from "react-router";
-import { ArrowLeftIcon } from "lucide-react";
 import toast from "react-hot-toast";
+import PageLayout from "../../components/PageLayout.jsx";
+import { FormCard, StyledInput, PrimaryButton } from "../../components/FormComponents.jsx";
 
 const AddIntern = () => {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    college: "",
-    department: "",
-    skills: ""
-  });
+  const [form, setForm] = useState({ name: "", email: "", password: "", college: "", department: "", skills: "" });
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      await api.post("/hr/intern",
-        form);
+      await api.post("/hr/intern", form);
       toast.success("Intern added successfully");
-      setForm({
-        name: "",
-        email: "",
-        password: "",
-        college: "",
-        department: "",
-        skills: ""
-      });
+      setForm({ name: "", email: "", password: "", college: "", department: "", skills: "" });
     } catch (err) {
       toast.error(err.response?.data?.message || "Error adding intern");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-primary/60 via-base-300 to-secondary/60">
-      <Navbar/>
-      <div className="mx-auto p-5 max-w-3xl ">
-        <Link to="/hr" className="btn btn-ghost mb-6">
-          <ArrowLeftIcon className="size-5"/> Back to Dashboard</Link>
-        <form
-        onSubmit={handleSubmit}
-        className="card glass border-2 shadow-lg p-3">
-          <h2 className="font-bold text-lg mb-3 text-center">Add Intern</h2>
+    <PageLayout backPath="/hr" backLabel="Back to Dashboard">
+      <FormCard title="Add Intern" subtitle="Create a new intern profile and credentials">
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
+            <StyledInput label="Full Name" name="name" placeholder="e.g. Riya Sharma" value={form.name} onChange={handleChange} required />
+            <StyledInput label="Email Address" name="email" type="email" placeholder="riya@example.com" value={form.email} onChange={handleChange} required />
+          </div>
 
-          <input name="name" placeholder="Name"
-            className="input input-bordered bg-base-100/30 backdrop-blur border border-base-300 mb-3"
-            onChange={handleChange} required />
+          <StyledInput label="Password" name="password" type="password" placeholder="Set a secure password" value={form.password} onChange={handleChange} required />
 
-          <input name="email" type="email" placeholder="Email"
-            className="input input-bordered bg-base-100/30 backdrop-blur border border-base-300 mb-3"
-            onChange={handleChange} required />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
+            <StyledInput label="College" name="college" placeholder="e.g. VNIT Nagpur" value={form.college} onChange={handleChange} required />
+            <StyledInput label="Department" name="department" placeholder="e.g. Computer Science" value={form.department} onChange={handleChange} required />
+          </div>
 
-          <input name="password" type="password" placeholder="Password"
-            className="input input-bordered bg-base-100/30 backdrop-blur border border-base-300 mb-3"
-            onChange={handleChange} required />
+          <StyledInput label="Skills (comma separated)" name="skills" placeholder="e.g. React, Node.js, MongoDB" value={form.skills} onChange={handleChange} required />
 
-          <input name="college" placeholder="College"
-            className="input input-bordered bg-base-100/30 backdrop-blur border border-base-300 mb-3"
-            onChange={handleChange} required />
-
-          <input name="department" placeholder="Department"
-            className="input input-bordered bg-base-100/30 backdrop-blur border border-base-300 mb-3"
-            onChange={handleChange} required />
-
-          <input name="skills" placeholder="Skills (comma separated)"
-            className="input input-bordered bg-base-100/30 backdrop-blur border border-base-300 mb-3"
-            onChange={handleChange} required />
-
-          <button className="btn btn-bordered bg-base-100/30 backdrop-blur border border-base-300">Add Intern</button>
+          <div style={{ marginTop: "4px" }}>
+            <PrimaryButton type="submit" loading={loading}>Add Intern</PrimaryButton>
+          </div>
         </form>
-      </div>
-    </div>
+      </FormCard>
+    </PageLayout>
   );
 };
 

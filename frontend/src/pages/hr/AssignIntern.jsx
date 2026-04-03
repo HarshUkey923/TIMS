@@ -1,114 +1,135 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api.js";
-import { Link, useNavigate, useParams } from "react-router";
-import Navbar from "../../components/Navbar.jsx";
-import { ArrowLeftIcon } from "lucide-react";
+import { useParams } from "react-router";
+import toast from "react-hot-toast";
+import PageLayout from "../../components/PageLayout.jsx";
+import { FormCard, StyledSelect, PrimaryButton, SectionDivider } from "../../components/FormComponents.jsx";
+import { useTheme } from "../../context/ThemeContext.jsx";
+import { UsersIcon, UserIcon } from "lucide-react";
 
 const AssignIntern = () => {
-    const [ interns, setInterns ] = useState([]);
-    const [ program, setProgram ] = useState([]);
-    const [ mentors, setMentors ] = useState([]);
-    const [ internId, setInternId ] = useState("");
-    const [ mentorId, setMentorId ] = useState("");
-    const [ programId, setProgramId ] = useState("");
+  const [interns, setInterns]   = useState([]);
+  const [program, setProgram]   = useState({});
+  const [mentors, setMentors]   = useState([]);
+  const [internId, setInternId] = useState("");
+  const [mentorId, setMentorId] = useState("");
+  const [loadingIntern, setLoadingIntern] = useState(false);
+  const [loadingMentor, setLoadingMentor] = useState(false);
+  const { id } = useParams();
+  const { isDark } = useTheme();
 
-    const {id} = useParams();
+  const t = isDark
+    ? { text: "#f9fafb", textMuted: "#6b7280", badge: "rgba(99,102,241,0.12)", badgeText: "#818cf8" }
+    : { text: "#111827", textMuted: "#6b7280", badge: "rgba(99,102,241,0.1)",  badgeText: "#6366f1" };
 
-    useEffect(() => {
-        const FetchData = async (req, res) => {
-            const getInterns = await api.get("/hr/intern");
-            console.log(getInterns.data)
-
-            const programs = await api.get(`/hr/findprogram/${id}`);
-            console.log(programs.data)
-
-            const mentors = await api.get("/hr/mentor");
-            console.log(mentors.data);
-
-            setProgram(programs.data)
-            setInterns(getInterns.data);
-            setMentors(mentors.data);
-            
-        };
-        FetchData();
-    }, []);
-
-    const AssignInterns = async (e) => {
-        e.preventDefault();
-        try {
-            await api.put("/hr/assign-program", {
-                programId: id,
-                internId: internId
-            });
-            alert("Intern assigned to program successfully");
-            setInternId("");
-            setProgramId("");
-        } catch (error) {
-            console.log(error);
-        }
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [internRes, programRes, mentorRes] = await Promise.all([
+          api.get("/hr/intern"),
+          api.get(`/hr/findprogram/${id}`),
+          api.get("/hr/mentor"),
+        ]);
+        setInterns(internRes.data);
+        setProgram(programRes.data);
+        setMentors(mentorRes.data);
+      } catch (error) {
+        console.log(error);
+      }
     };
+    fetchData();
+  }, []);
 
-    const AssignMentor = async (e) => {
-        e.preventDefault();
-        try {
-            await api.put("/hr/assign-mentor", {
-                programId: id,
-                mentorId: mentorId
-            });
-            alert("Mentor assigned to program successfully");
-            setMentorId("");
-            setProgramId("");
-        } catch (error) {
-            console.log(error);
-        }
-    };
+  const assignIntern = async (e) => {
+    e.preventDefault();
+    setLoadingIntern(true);
+    try {
+      await api.put("/hr/assign-program", { programId: id, internId });
+      toast.success("Intern assigned successfully");
+      setInternId("");
+    } catch (error) {
+      toast.error("Failed to assign intern");
+      console.log(error);
+    } finally {
+      setLoadingIntern(false);
+    }
+  };
 
-    return (
-        <div className="min-h-screen bg-gradient-to-r from-primary/60 via-base-300 to-secondary/60">
-            <Navbar/>
-            <div className="mx-auto p-5 max-w-3xl">
-                <Link to="/hr" className="btn btn-ghost mb-6">
-                <ArrowLeftIcon className="size-5"/> Back to Dashboard</Link>
-                <form onSubmit={AssignInterns} className="card glass shadow-lg p-4 mb-4">
-                    <h2 className="font-bold text-lg mb-3 text-center">Assign Interns</h2>
-                    <h2 className="font-bold text-lg mb-3 text-center">{program.title}</h2>
-                    <select className="select select-primary mb-3"
-                    value={internId}
-                    onChange={(e) => setInternId(e.target.value)}
-                    required>
-                        <option value="">Select Intern</option>
-                        {interns
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                        .map(interns => (
-                            <option key = {interns._id} value={interns._id}>
-                                {interns.name}
-                            </option>
-                        ))}
-                    </select>
-                    <button className="btn btn-primary" type="submit">Assign</button>
-                </form>
+  const assignMentor = async (e) => {
+    e.preventDefault();
+    setLoadingMentor(true);
+    try {
+      await api.put("/hr/assign-mentor", { programId: id, mentorId });
+      toast.success("Mentor assigned successfully");
+      setMentorId("");
+    } catch (error) {
+      toast.error("Failed to assign mentor");
+      console.log(error);
+    } finally {
+      setLoadingMentor(false);
+    }
+  };
 
-                <form onSubmit={AssignMentor} className="card glass shadow-lg p-4">
-                    <h2 className="font-bold text-lg mb-3 text-center">Assign Mentor</h2>
-                    <h2 className="font-bold text-lg mb-3 text-center">{program.title}</h2>
-                    <select className="select select-primary mb-3"
-                    value={mentorId}
-                    onChange={(e) => setMentorId(e.target.value)}
-                    required>
-                        <option value="">Select Mentor</option>
-                        {mentors
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                        .map(mentors => (
-                            <option key = {mentors._id} value={mentors._id}>
-                                {mentors.name}
-                            </option>
-                        ))}
-                    </select>
-                    <button className="btn btn-primary" type="submit">Assign</button>
-                </form>
-            </div>
+  return (
+    <PageLayout backPath="/hr" backLabel="Back to Dashboard">
+      {/* Program title badge */}
+      {program.title && (
+        <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px" }}>
+          <span style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#6366f1" }}>
+            Assigning to
+          </span>
+          <span style={{ fontSize: "14px", fontWeight: 600, color: t.text }}>{program.title}</span>
+          <span style={{ fontSize: "11px", padding: "2px 10px", borderRadius: "20px", background: t.badge, color: t.badgeText }}>
+            {program.duration}
+          </span>
         </div>
-    )
-}
+      )}
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        {/* Assign Intern */}
+        <FormCard title="Assign Intern" subtitle="Add an intern to this program">
+          <form onSubmit={assignIntern} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <StyledSelect
+              label="Select Intern"
+              value={internId}
+              onChange={(e) => setInternId(e.target.value)}
+              required
+            >
+              <option value="">Choose an intern...</option>
+              {[...interns].sort((a, b) => a.name.localeCompare(b.name)).map((intern) => (
+                <option key={intern._id} value={intern._id}>{intern.name}</option>
+              ))}
+            </StyledSelect>
+            <PrimaryButton type="submit" loading={loadingIntern}>
+              <UsersIcon size={15} /> Assign Intern
+            </PrimaryButton>
+          </form>
+        </FormCard>
+
+        <SectionDivider />
+
+        {/* Assign Mentor */}
+        <FormCard title="Assign Mentor" subtitle="Assign a mentor or trainer to this program">
+          <form onSubmit={assignMentor} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <StyledSelect
+              label="Select Mentor"
+              value={mentorId}
+              onChange={(e) => setMentorId(e.target.value)}
+              required
+            >
+              <option value="">Choose a mentor...</option>
+              {[...mentors].sort((a, b) => a.name.localeCompare(b.name)).map((mentor) => (
+                <option key={mentor._id} value={mentor._id}>{mentor.name}</option>
+              ))}
+            </StyledSelect>
+            <PrimaryButton type="submit" loading={loadingMentor}>
+              <UserIcon size={15} /> Assign Mentor
+            </PrimaryButton>
+          </form>
+        </FormCard>
+      </div>
+    </PageLayout>
+  );
+};
 
 export default AssignIntern;

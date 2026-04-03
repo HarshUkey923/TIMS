@@ -1,74 +1,49 @@
 import { useState } from "react";
-import Navbar from "../../components/Navbar";
-import { ArrowLeftIcon } from "lucide-react";
-import { Link } from "react-router";
-import toast from "react-hot-toast";
 import api from "../../services/api";
-
+import toast from "react-hot-toast";
+import PageLayout from "../../components/PageLayout.jsx";
+import { FormCard, StyledInput, PrimaryButton } from "../../components/FormComponents.jsx";
 
 const AddMentor = () => {
-    const [form, setForm] = useState({
-        name:"",
-        email:"",
-        password:"",
-        specialization:""
-    });
+  const [form, setForm] = useState({ name: "", email: "", password: "", specialization: "" });
+  const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            await api.post("/hr/add-mentor",
-            form);
-            toast.success("Mentor added successfully");
-            setForm({
-            name: "",
-            email: "",
-            password: "",
-            specialization: ""
-            });
-        } catch (err) {
-            toast.error(err.message,"Error adding mentor");
-        }
-    };
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-    const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-     };
-    
-    return (
-        <div className="min-h-screen bg-gradient-to-r from-primary/60 via-base-300 to-secondary/60">
-            <Navbar/>
-            <div className="mx-auto p-5 max-w-3xl">
-            <Link to= "/hr" className="btn btn-ghost mb-6">
-                <ArrowLeftIcon className="size-5"/> Back to Dashboard
-            </Link>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await api.post("/hr/add-mentor", form);
+      toast.success("Mentor added successfully");
+      setForm({ name: "", email: "", password: "", specialization: "" });
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Error adding mentor");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            <form
-                onSubmit={handleSubmit}
-                className="card glass border-2 shadow-lg p-3">
-                <h2 className="font-bold text-lg mb-3 text-center">Add Mentor</h2>
+  return (
+    <PageLayout backPath="/hr" backLabel="Back to Dashboard">
+      <FormCard title="Add Mentor" subtitle="Register a new mentor or trainer">
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
+            <StyledInput label="Full Name" name="name" placeholder="e.g. Arjun Mehta" value={form.name} onChange={handleChange} required />
+            <StyledInput label="Email Address" name="email" type="email" placeholder="arjun@aetherbyte.com" value={form.email} onChange={handleChange} required />
+          </div>
 
-                <input name="name" placeholder="Name"
-                    className="input w-full bg-base-100/30 backdrop-blur border border-base-300 mb-3"
-                    onChange={handleChange} required />
+          <StyledInput label="Password" name="password" type="password" placeholder="Set a secure password" value={form.password} onChange={handleChange} required />
 
-                <input name="email" type="email" placeholder="Email"
-                    className="input w-full bg-base-100/30 backdrop-blur border border-base-300 mb-3"
-                    onChange={handleChange} required />
+          <StyledInput label="Specialization" name="specialization" placeholder="e.g. Full Stack Development" value={form.specialization} onChange={handleChange} required />
 
-                <input name="password" type="password" placeholder="Password"
-                    className="input w-full bg-base-100/30 backdrop-blur border border-base-300 mb-3"
-                    onChange={handleChange} required />
-
-                <input name="specialization" placeholder="Specialization"
-                    className="input w-full bg-base-100/30 backdrop-blur border border-base-300 mb-3"
-                    onChange={handleChange} required />
-
-                <button name="submit" type="submit" className="btn btn-outline w-full bg-base-100/30 backdrop-blur border border-base-300">Add Mentor</button>
-                </form>
-            </div>
-        </div>
-    )
+          <div style={{ marginTop: "4px" }}>
+            <PrimaryButton type="submit" loading={loading}>Add Mentor</PrimaryButton>
+          </div>
+        </form>
+      </FormCard>
+    </PageLayout>
+  );
 };
 
 export default AddMentor;

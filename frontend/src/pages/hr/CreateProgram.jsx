@@ -1,74 +1,63 @@
 import { useState } from "react";
 import api from "../../services/api.js";
 import toast from "react-hot-toast";
-import Navbar from "../../components/Navbar.jsx";
-import { ArrowLeftIcon } from 'lucide-react';
-import { Link } from "react-router";
+import PageLayout from "../../components/PageLayout.jsx";
+import { FormCard, StyledInput, StyledTextarea, PrimaryButton } from "../../components/FormComponents.jsx";
 
 const CreateProgram = () => {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [duration, setDuration] = useState("");
+  const [form, setForm] = useState({ title: "", description: "", duration: "" });
+  const [loading, setLoading] = useState(false);
 
-  const HandleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      await api.post("/hr/program", { title, description, duration });
+      await api.post("/hr/program", form);
       toast.success("Program created successfully");
-      setTitle("");
-      setDescription("");
-      setDuration("");
+      setForm({ title: "", description: "", duration: "" });
     } catch (err) {
       toast.error("Error creating program!");
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="container min-h-screen bg-gradient-to-r from-primary/60 via-base-300 to-secondary/60">
-      <Navbar/>
+    <PageLayout backPath="/hr" backLabel="Back to Dashboard">
+      <FormCard title="Create Program" subtitle="Define a new training or internship program">
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <StyledInput
+            label="Program Title"
+            placeholder="e.g. Full Stack Web Development"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            required
+          />
 
-        <div className="mx-auto p-5 max-w-3xl">
+          <StyledTextarea
+            label="Description"
+            placeholder="Describe what this program covers, goals, expectations..."
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            rows={4}
+            required
+          />
 
-          <Link to="/hr" className="btn btn-ghost mb-6">
-          <ArrowLeftIcon className="size-5"/> Back to Dashboard</Link>
-          
-          <div className="card glass shadow-lg border-2 gap-6">
-            <form
-            onSubmit={HandleSubmit}
-            className="card shadow p-4 gap-6">
-              <h2 className="font-bold text-lg mb-3 text-center">Create Program</h2>
+          <StyledInput
+            label="Duration"
+            placeholder="e.g. 3 Months, 6 Weeks"
+            value={form.duration}
+            onChange={(e) => setForm({ ...form, duration: e.target.value })}
+            required
+          />
 
-              <input
-                className="input input-bordered bg-base-100/30 backdrop-blur border border-base-300 mb-2"
-                placeholder="Program Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
-
-              <textarea
-                className="textarea textarea-bordered bg-base-100/30 backdrop-blur border border-base-300 mb-2"
-                placeholder="Description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                required
-              />
-
-              <input
-                className="input input-bordered bg-base-100/30 backdrop-blur border border-base-300 mb-2"
-                placeholder="Duration (e.g. 3 Months)"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                required
-              />
-
-              <button className="btn btn-primary">Create</button>
-            </form>
+          <div style={{ marginTop: "4px" }}>
+            <PrimaryButton type="submit" loading={loading}>Create Program</PrimaryButton>
           </div>
-        </div>
-    </div>
-    
+        </form>
+      </FormCard>
+    </PageLayout>
   );
 };
 
