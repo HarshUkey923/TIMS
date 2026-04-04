@@ -9,11 +9,6 @@ export const GetAssignedInterns = async (req, res) => {
         const programs = await Program.find({
             mentors: mentorId
         })
-        .populate(
-            { path: "mentors",
-              model: "Program"
-             }
-        );
      res.json(programs);
     } catch (error) {
         console.log(error)

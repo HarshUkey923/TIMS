@@ -1,58 +1,288 @@
-import { useNavigate } from "react-router"
-import Navbar from "../../components/Navbar"
-import { PlusIcon } from "lucide-react";
+import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import api from "../../services/api";
+import { useTheme } from "../../context/ThemeContext.jsx";
+import PageLayout from "../../components/PageLayout.jsx";
+import {
+  UsersIcon, LayoutGridIcon, ClipboardListIcon,
+  ChevronDownIcon, ChevronUpIcon, ClockIcon, UserIcon,
+} from "lucide-react";
 
+const themes = {
+  dark: {
+    surface: "rgba(255,255,255,0.03)",
+    surfaceHover: "rgba(255,255,255,0.055)",
+    border: "rgba(255,255,255,0.07)",
+    borderHover: "rgba(99,102,241,0.35)",
+    text: "#f9fafb",
+    textMuted: "#6b7280",
+    textFaint: "#374151",
+    rowHover: "rgba(255,255,255,0.03)",
+    theadBg: "rgba(255,255,255,0.03)",
+    skeletonBg: "rgba(255,255,255,0.08)",
+    btnGhost: "rgba(255,255,255,0.04)",
+    btnGhostBorder: "rgba(255,255,255,0.08)",
+    btnGhostText: "#e5e7eb",
+  },
+  light: {
+    surface: "rgba(255,255,255,0.85)",
+    surfaceHover: "rgba(255,255,255,1)",
+    border: "rgba(0,0,0,0.08)",
+    borderHover: "rgba(99,102,241,0.4)",
+    text: "#111827",
+    textMuted: "#6b7280",
+    textFaint: "#d1d5db",
+    rowHover: "rgba(0,0,0,0.02)",
+    theadBg: "rgba(0,0,0,0.03)",
+    skeletonBg: "rgba(0,0,0,0.07)",
+    btnGhost: "rgba(255,255,255,0.8)",
+    btnGhostBorder: "rgba(0,0,0,0.09)",
+    btnGhostText: "#374151",
+  },
+};
+
+// ─── MentorDashboard ──────────────────────────────────────────────────────────
 const MentorDashboard = () => {
   const [programs, setPrograms] = useState([]);
-
+  const [loading, setLoading]   = useState(true);
+  const { isDark } = useTheme();
+  const t = isDark ? themes.dark : themes.light;
   const navigate = useNavigate();
 
   useEffect(() => {
-    const program = async () => {
+    const fetchPrograms = async () => {
       try {
-        const getProgram = await api.get("/mentor/programs");
-        setPrograms(getProgram.data);
-        console.log("Programs: ", getProgram.data)
+        const res = await api.get("/mentor/programs");
+        setPrograms(res.data);
       } catch (error) {
-        console.log(error)
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPrograms();
+  }, []);
+
+  const totalInterns = programs.reduce((acc, p) => acc + (p.interns?.length || 0), 0);
+
+  const stats = [
+    { label: "Assigned Programs", value: programs.length,  icon: LayoutGridIcon,    accent: "#6366f1", bg: "rgba(99,102,241,0.1)" },
+    { label: "Total Interns",     value: totalInterns,      icon: UsersIcon,         accent: "#10b981", bg: "rgba(16,185,129,0.1)" },
+    { label: "Active Tasks",      value: "—",               icon: ClipboardListIcon, accent: "#f59e0b", bg: "rgba(245,158,11,0.1)" },
+  ];
+
+  return (
+    <PageLayout>
+      <div style={{ marginBottom: "clamp(20px,4vw,32px)" }}>
+        <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#6366f1", marginBottom: "4px" }}>
+          Aetherbyte IT Solutions
+        </p>
+        <h1 style={{ fontSize: "clamp(22px,5vw,28px)", fontWeight: 700, letterSpacing: "-0.02em", color: t.text, margin: 0 }}>
+          Mentor Dashboard
+        </h1>
+        <p style={{ fontSize: "13px", color: t.textMuted, marginTop: "4px" }}>
+          Your assigned programs and interns.
+        </p>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: "12px", marginBottom: "clamp(20px,4vw,32px)" }}>
+        {stats.map((s) => (
+          <StatCard key={s.label} stat={s} t={t} loading={loading} />
+        ))}
+      </div>
+
+      <div>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+          <h2 style={{ fontSize: "14px", fontWeight: 600, color: t.text, whiteSpace: "nowrap", margin: 0 }}>
+            Assigned Programs
+          </h2>
+          <span style={{ fontSize: "11px", background: "rgba(99,102,241,0.12)", color: "#818cf8", padding: "2px 8px", borderRadius: "20px" }}>
+            {programs.length}
+          </span>
+          <div style={{ flex: 1, height: "1px", background: t.border }} />
+        </div>
+
+        {loading ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            {[1, 2].map((i) => (
+              <div key={i} style={{ height: "80px", borderRadius: "12px", background: t.skeletonBg, animation: "pulse 1.5s ease-in-out infinite" }} />
+            ))}
+          </div>
+        ) : programs.length > 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            {programs.map((prog) => (
+              <ProgramCard key={prog._id} prog={prog} t={t} isDark={isDark} navigate={navigate} />
+            ))}
+          </div>
+        ) : (
+          <div style={{ borderRadius: "12px", border: `1px dashed ${t.border}`, padding: "48px 24px", textAlign: "center" }}>
+            <LayoutGridIcon size={32} style={{ color: t.textFaint, marginBottom: "12px" }} />
+            <p style={{ fontSize: "14px", fontWeight: 500, color: t.textMuted }}>No programs assigned yet</p>
+            <p style={{ fontSize: "12px", color: t.textMuted, marginTop: "4px", opacity: 0.7 }}>Contact your HR manager to get assigned.</p>
+          </div>
+        )}
+      </div>
+
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
+    </PageLayout>
+  );
+};
+
+const ProgramCard = ({ prog, t, isDark, navigate }) => {
+  const [expanded, setExpanded] = useState(false);
+  const [interns, setInterns]   = useState([]);
+  const [loadingInterns, setLoadingInterns] = useState(false);
+  const internCount = prog.interns?.length || 0;
+
+  const toggleExpand = async () => {
+    if (!expanded && interns.length === 0 && internCount > 0) {
+      setLoadingInterns(true);
+      try {
+        const res = await api.get(`/hr/get-interns/${prog._id}`);
+        setInterns(res.data);
+      } catch (e) {
+        console.log(e);
+      } finally {
+        setLoadingInterns(false);
       }
     }
-    program()
-  }, []);
-  return (
-    <div className="min-h-screen bg-gradient-to-r from-primary/60 via-base-300 to-secondary/60">
-      <Navbar/>
-      
-      <div className="mx-auto max-w-7xl p-6">
-        <div className="flex card glass p-8 gap-6 border-2 shadow-md">
-                <div className="flex justify-between items-center">
-                    <h1 className="text-3xl font-bold">Mentor Dashboard</h1>
-                    <div className="flex gap-3 justify-end mt-4">
-                        <button className="btn btn-ghost btn-w-xl" onClick={() => navigate()}> <PlusIcon size={18}/> Create Task</button>
-                        <button className="btn btn-ghost btn-w-xl" onClick={() => navigate()}> <PlusIcon size={18}/> Assign Task</button>
-                    </div>
-                </div>
-         </div>
-         <div className="card p-8 gap-6 mt-5">
-            <h1 className="divider opacity-70 text-center font-bold text-xl">Assigned Programs</h1>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3">
-                { programs.length > 0 ? (
-                    programs.map(program => (
-                        <div key={program._id} className="card p-3 pb-5 items-center">
-                            <div className="card bg-base-100/20 backdrop-blur-lg text-base-content shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-7 h-full w-full">
-                                <h2 className="text-lg font-bold truncate" title={program.title}>{program.title} </h2>
-                                </div>
-                            </div>
+    setExpanded((prev) => !prev);
+  };
 
-                    ))
-                ) : ( <p>No active programs.</p> ) }
-                </div>
-         </div>
+  return (
+    <div style={{
+      background: t.surface, border: `1px solid ${expanded ? "rgba(99,102,241,0.3)" : t.border}`,
+      borderRadius: "12px", overflow: "hidden",
+      boxShadow: isDark ? "0 2px 12px rgba(0,0,0,0.15)" : "0 2px 12px rgba(0,0,0,0.05)",
+      transition: "border 0.2s",
+    }}>
+      <div
+        onClick={toggleExpand}
+        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", cursor: "pointer" }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "14px", minWidth: 0 }}>
+          <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(99,102,241,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <LayoutGridIcon size={16} style={{ color: "#818cf8" }} />
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <h3 style={{ fontSize: "14px", fontWeight: 600, color: t.text, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {prog.title}
+            </h3>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "3px" }}>
+              <span style={{ fontSize: "11px", color: t.textMuted, display: "flex", alignItems: "center", gap: "4px" }}>
+                <ClockIcon size={11} /> {prog.duration || "—"}
+              </span>
+              <span style={{ fontSize: "11px", color: t.textMuted, display: "flex", alignItems: "center", gap: "4px" }}>
+                <UsersIcon size={11} /> {internCount} intern{internCount !== 1 ? "s" : ""}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
+          <span style={{ fontSize: "10px", fontWeight: 500, padding: "3px 10px", borderRadius: "20px", background: internCount > 0 ? "rgba(16,185,129,0.1)" : "rgba(107,114,128,0.1)", color: internCount > 0 ? "#34d399" : t.textMuted }}>
+            {internCount > 0 ? "Active" : "Empty"}
+          </span>
+          {expanded ? <ChevronUpIcon size={16} style={{ color: t.textMuted }} /> : <ChevronDownIcon size={16} style={{ color: t.textMuted }} />}
+        </div>
+      </div>
+
+      {expanded && (
+        <div style={{ borderTop: `1px solid ${t.border}` }}>
+          {loadingInterns ? (
+            <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "8px" }}>
+              {[1, 2].map((i) => <div key={i} style={{ height: "40px", borderRadius: "8px", background: t.skeletonBg, animation: "pulse 1.5s ease-in-out infinite" }} />)}
+            </div>
+          ) : interns.length > 0 ? (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+                <thead>
+                  <tr style={{ background: t.theadBg }}>
+                    {["Intern", "Email", "College", ""].map((h) => (
+                      <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: "11px", fontWeight: 600, color: t.textMuted, textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: `1px solid ${t.border}` }}>
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {interns.map((intern, i) => (
+                    <InternRow
+                      key={intern._id}
+                      intern={intern}
+                      t={t}
+                      isLast={i === interns.length - 1}
+                      onAssign={() => navigate(`/mentor/assign-task/${prog._id}/${intern._id}`, { state: { internName: intern.name, programTitle: prog.title } })}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div style={{ padding: "24px", textAlign: "center" }}>
+              <p style={{ fontSize: "13px", color: t.textMuted }}>No interns assigned to this program yet.</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Intern table row ─────────────────────────────────────────────────────────
+const InternRow = ({ intern, t, isLast, onAssign }) => {
+  const [hovered, setHovered] = useState(false);
+  const [btnHovered, setBtnHovered] = useState(false);
+
+  return (
+    <tr
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ background: hovered ? t.rowHover : "transparent", transition: "background 0.15s", borderBottom: isLast ? "none" : `1px solid ${t.border}` }}
+    >
+      <td style={{ padding: "12px 16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: "rgba(99,102,241,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <UserIcon size={13} style={{ color: "#818cf8" }} />
+          </div>
+          <span style={{ fontWeight: 500, color: t.text, fontSize: "13px" }}>{intern.name}</span>
+        </div>
+      </td>
+      <td style={{ padding: "12px 16px", color: t.textMuted, fontSize: "13px" }}>{intern.email}</td>
+      <td style={{ padding: "12px 16px", color: t.textMuted, fontSize: "13px" }}>{intern.college || "—"}</td>
+      <td style={{ padding: "12px 16px", textAlign: "right" }}>
+        <button
+          onClick={onAssign}
+          onMouseEnter={() => setBtnHovered(true)}
+          onMouseLeave={() => setBtnHovered(false)}
+          style={{
+            padding: "5px 14px", borderRadius: "8px", fontSize: "11px", fontWeight: 600,
+            background: btnHovered ? "rgba(99,102,241,0.22)" : "rgba(99,102,241,0.12)",
+            color: "#818cf8", border: "1px solid rgba(99,102,241,0.25)",
+            cursor: "pointer", transition: "background 0.15s", fontFamily: "'DM Sans', sans-serif",
+          }}
+        >
+          + Assign Task
+        </button>
+      </td>
+    </tr>
+  );
+};
+
+// ─── Stat card ────────────────────────────────────────────────────────────────
+const StatCard = ({ stat, t, loading }) => (
+  <div style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: "12px", padding: "18px", transition: "background 0.3s", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+      <span style={{ fontSize: "11px", color: "#6b7280", fontWeight: 500 }}>{stat.label}</span>
+      <div style={{ background: stat.bg, borderRadius: "8px", padding: "6px", display: "flex" }}>
+        <stat.icon size={14} style={{ color: stat.accent }} />
       </div>
     </div>
-  )
-}
+    {loading
+      ? <div style={{ height: "32px", width: "48px", borderRadius: "6px", background: t.skeletonBg }} />
+      : <div style={{ fontSize: "clamp(22px,4vw,28px)", fontWeight: 700, letterSpacing: "-0.03em", color: t.text }}>{stat.value}</div>
+    }
+  </div>
+);
 
-export default MentorDashboard
+export default MentorDashboard;
