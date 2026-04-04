@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import authApi from "../services/authApi";
-import PageLayout from "../components/PageLayout";
+import PageLayout from "../components/PageLayoutPre";
 import SurfaceCard from "../components/SurfaceCard";
 import StyledInput from "../components/StyledInput";
 import { PrimaryButton } from "../components/Buttons";
@@ -28,7 +28,7 @@ const subText = isDark ? "#9ca3af" : "#6b7280";
       localStorage.setItem("role", res.data.role);
 
       if (res.data.role === "HR") navigate("/hr");
-      else if (res.data.role === "MENTOR") navigate("/mentor");
+      else if (res.data.role === "Mentor") navigate("/mentor");
       else navigate("/intern");
 
     } catch (error) {
@@ -55,7 +55,8 @@ const subText = isDark ? "#9ca3af" : "#6b7280";
             <h2 style={{
               fontSize: "22px",
               fontWeight: "600",
-              marginBottom: "6px"
+              marginBottom: "6px",
+              color: text
             }}>
               Welcome back
             </h2>
@@ -63,7 +64,8 @@ const subText = isDark ? "#9ca3af" : "#6b7280";
             <p style={{
               fontSize: "13px",
               opacity: 0.7,
-              marginBottom: "20px"
+              marginBottom: "20px",
+              color: text
             }}>
               Login to your account
             </p>
@@ -99,7 +101,8 @@ const subText = isDark ? "#9ca3af" : "#6b7280";
               marginTop: "16px",
               fontSize: "12px",
               opacity: 0.7,
-              textAlign: "center"
+              textAlign: "center",
+              color: text
             }}>
               Don’t have an account?{" "}
               <span
