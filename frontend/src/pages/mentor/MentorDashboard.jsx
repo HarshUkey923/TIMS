@@ -10,38 +10,19 @@ import {
 
 const themes = {
   dark: {
-    surface: "rgba(255,255,255,0.03)",
-    surfaceHover: "rgba(255,255,255,0.055)",
-    border: "rgba(255,255,255,0.07)",
-    borderHover: "rgba(99,102,241,0.35)",
-    text: "#f9fafb",
-    textMuted: "#6b7280",
-    textFaint: "#374151",
-    rowHover: "rgba(255,255,255,0.03)",
-    theadBg: "rgba(255,255,255,0.03)",
-    skeletonBg: "rgba(255,255,255,0.08)",
-    btnGhost: "rgba(255,255,255,0.04)",
-    btnGhostBorder: "rgba(255,255,255,0.08)",
-    btnGhostText: "#e5e7eb",
+    surface: "rgba(255,255,255,0.03)", surfaceHover: "rgba(255,255,255,0.055)",
+    border: "rgba(255,255,255,0.07)", text: "#f9fafb", textMuted: "#6b7280",
+    textFaint: "#374151", rowHover: "rgba(255,255,255,0.03)",
+    theadBg: "rgba(255,255,255,0.03)", skeletonBg: "rgba(255,255,255,0.08)",
   },
   light: {
-    surface: "rgba(255,255,255,0.85)",
-    surfaceHover: "rgba(255,255,255,1)",
-    border: "rgba(0,0,0,0.08)",
-    borderHover: "rgba(99,102,241,0.4)",
-    text: "#111827",
-    textMuted: "#6b7280",
-    textFaint: "#d1d5db",
-    rowHover: "rgba(0,0,0,0.02)",
-    theadBg: "rgba(0,0,0,0.03)",
-    skeletonBg: "rgba(0,0,0,0.07)",
-    btnGhost: "rgba(255,255,255,0.8)",
-    btnGhostBorder: "rgba(0,0,0,0.09)",
-    btnGhostText: "#374151",
+    surface: "rgba(255,255,255,0.85)", surfaceHover: "rgba(255,255,255,1)",
+    border: "rgba(0,0,0,0.08)", text: "#111827", textMuted: "#6b7280",
+    textFaint: "#d1d5db", rowHover: "rgba(0,0,0,0.02)",
+    theadBg: "rgba(0,0,0,0.03)", skeletonBg: "rgba(0,0,0,0.07)",
   },
 };
 
-// ─── MentorDashboard ──────────────────────────────────────────────────────────
 const MentorDashboard = () => {
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading]   = useState(true);
@@ -50,29 +31,23 @@ const MentorDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchPrograms = async () => {
-      try {
-        const res = await api.get("/mentor/programs");
-        setPrograms(res.data);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPrograms();
+    api.get("/mentor/programs")
+      .then((res) => setPrograms(res.data))
+      .catch(console.log)
+      .finally(() => setLoading(false));
+      console.log(setPrograms)
   }, []);
 
   const totalInterns = programs.reduce((acc, p) => acc + (p.interns?.length || 0), 0);
 
   const stats = [
-    { label: "Assigned Programs", value: programs.length,  icon: LayoutGridIcon,    accent: "#6366f1", bg: "rgba(99,102,241,0.1)" },
-    { label: "Total Interns",     value: totalInterns,      icon: UsersIcon,         accent: "#10b981", bg: "rgba(16,185,129,0.1)" },
-    { label: "Active Tasks",      value: "—",               icon: ClipboardListIcon, accent: "#f59e0b", bg: "rgba(245,158,11,0.1)" },
+    { label: "Assigned Programs", value: programs.length, icon: LayoutGridIcon,    accent: "#6366f1", bg: "rgba(99,102,241,0.1)" },
+    { label: "Total Interns",     value: totalInterns,     icon: UsersIcon,         accent: "#10b981", bg: "rgba(16,185,129,0.1)" },
+    { label: "Active Tasks",      value: "—",              icon: ClipboardListIcon, accent: "#f59e0b", bg: "rgba(245,158,11,0.1)" },
   ];
 
   return (
-    <PageLayout>
+    <PageLayout backPath={null}>
       <div style={{ marginBottom: "clamp(20px,4vw,32px)" }}>
         <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#6366f1", marginBottom: "4px" }}>
           Aetherbyte IT Solutions
@@ -80,22 +55,16 @@ const MentorDashboard = () => {
         <h1 style={{ fontSize: "clamp(22px,5vw,28px)", fontWeight: 700, letterSpacing: "-0.02em", color: t.text, margin: 0 }}>
           Mentor Dashboard
         </h1>
-        <p style={{ fontSize: "13px", color: t.textMuted, marginTop: "4px" }}>
-          Your assigned programs and interns.
-        </p>
+        <p style={{ fontSize: "13px", color: t.textMuted, marginTop: "4px" }}>Your assigned programs and interns.</p>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: "12px", marginBottom: "clamp(20px,4vw,32px)" }}>
-        {stats.map((s) => (
-          <StatCard key={s.label} stat={s} t={t} loading={loading} />
-        ))}
+        {stats.map((s) => <StatCard key={s.label} stat={s} t={t} loading={loading} />)}
       </div>
 
       <div>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-          <h2 style={{ fontSize: "14px", fontWeight: 600, color: t.text, whiteSpace: "nowrap", margin: 0 }}>
-            Assigned Programs
-          </h2>
+          <h2 style={{ fontSize: "14px", fontWeight: 600, color: t.text, whiteSpace: "nowrap", margin: 0 }}>Assigned Programs</h2>
           <span style={{ fontSize: "11px", background: "rgba(99,102,241,0.12)", color: "#818cf8", padding: "2px 8px", borderRadius: "20px" }}>
             {programs.length}
           </span>
@@ -104,25 +73,20 @@ const MentorDashboard = () => {
 
         {loading ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {[1, 2].map((i) => (
-              <div key={i} style={{ height: "80px", borderRadius: "12px", background: t.skeletonBg, animation: "pulse 1.5s ease-in-out infinite" }} />
-            ))}
+            {[1,2].map((i) => <div key={i} style={{ height: "80px", borderRadius: "12px", background: t.skeletonBg, animation: "pulse 1.5s ease-in-out infinite" }} />)}
           </div>
         ) : programs.length > 0 ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {programs.map((prog) => (
-              <ProgramCard key={prog._id} prog={prog} t={t} isDark={isDark} navigate={navigate} />
-            ))}
+            {programs.map((prog) => <ProgramCard key={prog._id} prog={prog} t={t} isDark={isDark} navigate={navigate} />)}
           </div>
         ) : (
           <div style={{ borderRadius: "12px", border: `1px dashed ${t.border}`, padding: "48px 24px", textAlign: "center" }}>
             <LayoutGridIcon size={32} style={{ color: t.textFaint, marginBottom: "12px" }} />
-            <p style={{ fontSize: "14px", fontWeight: 500, color: t.textMuted }}>No programs assigned yet</p>
+            <p style={{ fontSize: "14px", fontWeight: 500, color: t.textMuted }}>No programs assigned yet {id}</p>
             <p style={{ fontSize: "12px", color: t.textMuted, marginTop: "4px", opacity: 0.7 }}>Contact your HR manager to get assigned.</p>
           </div>
         )}
       </div>
-
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
     </PageLayout>
   );
@@ -130,55 +94,24 @@ const MentorDashboard = () => {
 
 const ProgramCard = ({ prog, t, isDark, navigate }) => {
   const [expanded, setExpanded] = useState(false);
-  const [interns, setInterns]   = useState([]);
-  const [loadingInterns, setLoadingInterns] = useState(false);
-  const internCount = prog.interns?.length || 0;
-
-  const toggleExpand = async () => {
-    if (!expanded && interns.length === 0 && internCount > 0) {
-      setLoadingInterns(true);
-      try {
-        const res = await api.get(`/hr/get-interns/${prog._id}`);
-        setInterns(res.data);
-      } catch (e) {
-        console.log(e);
-      } finally {
-        setLoadingInterns(false);
-      }
-    }
-    setExpanded((prev) => !prev);
-  };
+  const interns = prog.interns || [];
+  const internCount = interns.length;
 
   return (
-    <div style={{
-      background: t.surface, border: `1px solid ${expanded ? "rgba(99,102,241,0.3)" : t.border}`,
-      borderRadius: "12px", overflow: "hidden",
-      boxShadow: isDark ? "0 2px 12px rgba(0,0,0,0.15)" : "0 2px 12px rgba(0,0,0,0.05)",
-      transition: "border 0.2s",
-    }}>
-      <div
-        onClick={toggleExpand}
-        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", cursor: "pointer" }}
-      >
+    <div style={{ background: t.surface, border: `1px solid ${expanded ? "rgba(99,102,241,0.3)" : t.border}`, borderRadius: "12px", overflow: "hidden", boxShadow: isDark ? "0 2px 12px rgba(0,0,0,0.15)" : "0 2px 12px rgba(0,0,0,0.05)", transition: "border 0.2s" }}>
+      <div onClick={() => setExpanded((p) => !p)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", cursor: "pointer" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "14px", minWidth: 0 }}>
           <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(99,102,241,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <LayoutGridIcon size={16} style={{ color: "#818cf8" }} />
           </div>
           <div style={{ minWidth: 0 }}>
-            <h3 style={{ fontSize: "14px", fontWeight: 600, color: t.text, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {prog.title}
-            </h3>
+            <h3 style={{ fontSize: "14px", fontWeight: 600, color: t.text, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{prog.title}</h3>
             <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "3px" }}>
-              <span style={{ fontSize: "11px", color: t.textMuted, display: "flex", alignItems: "center", gap: "4px" }}>
-                <ClockIcon size={11} /> {prog.duration || "—"}
-              </span>
-              <span style={{ fontSize: "11px", color: t.textMuted, display: "flex", alignItems: "center", gap: "4px" }}>
-                <UsersIcon size={11} /> {internCount} intern{internCount !== 1 ? "s" : ""}
-              </span>
+              <span style={{ fontSize: "11px", color: t.textMuted, display: "flex", alignItems: "center", gap: "4px" }}><ClockIcon size={11} />{prog.duration || "—"}</span>
+              <span style={{ fontSize: "11px", color: t.textMuted, display: "flex", alignItems: "center", gap: "4px" }}><UsersIcon size={11} />{internCount} intern{internCount !== 1 ? "s" : ""}</span>
             </div>
           </div>
         </div>
-
         <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
           <span style={{ fontSize: "10px", fontWeight: 500, padding: "3px 10px", borderRadius: "20px", background: internCount > 0 ? "rgba(16,185,129,0.1)" : "rgba(107,114,128,0.1)", color: internCount > 0 ? "#34d399" : t.textMuted }}>
             {internCount > 0 ? "Active" : "Empty"}
@@ -189,19 +122,13 @@ const ProgramCard = ({ prog, t, isDark, navigate }) => {
 
       {expanded && (
         <div style={{ borderTop: `1px solid ${t.border}` }}>
-          {loadingInterns ? (
-            <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "8px" }}>
-              {[1, 2].map((i) => <div key={i} style={{ height: "40px", borderRadius: "8px", background: t.skeletonBg, animation: "pulse 1.5s ease-in-out infinite" }} />)}
-            </div>
-          ) : interns.length > 0 ? (
+          {interns.length > 0 ? (
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
                 <thead>
                   <tr style={{ background: t.theadBg }}>
                     {["Intern", "Email", "College", ""].map((h) => (
-                      <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: "11px", fontWeight: 600, color: t.textMuted, textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: `1px solid ${t.border}` }}>
-                        {h}
-                      </th>
+                      <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: "11px", fontWeight: 600, color: t.textMuted, textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: `1px solid ${t.border}` }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -212,7 +139,7 @@ const ProgramCard = ({ prog, t, isDark, navigate }) => {
                       intern={intern}
                       t={t}
                       isLast={i === interns.length - 1}
-                      onAssign={() => navigate(`/mentor/assign-task/${prog._id}/${intern._id}`, { state: { internName: intern.name, programTitle: prog.title } })}
+                      onAssign={() => navigate(`/assign-task/${prog._id}/${intern._id}`, { state: { internName: intern.name, programTitle: prog.title } })}
                     />
                   ))}
                 </tbody>
@@ -229,38 +156,27 @@ const ProgramCard = ({ prog, t, isDark, navigate }) => {
   );
 };
 
-// ─── Intern table row ─────────────────────────────────────────────────────────
 const InternRow = ({ intern, t, isLast, onAssign }) => {
-  const [hovered, setHovered] = useState(false);
+  const [hovered, setHovered]       = useState(false);
   const [btnHovered, setBtnHovered] = useState(false);
-
   return (
-    <tr
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{ background: hovered ? t.rowHover : "transparent", transition: "background 0.15s", borderBottom: isLast ? "none" : `1px solid ${t.border}` }}
-    >
+    <tr onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} style={{ background: hovered ? t.rowHover : "transparent", transition: "background 0.15s", borderBottom: isLast ? "none" : `1px solid ${t.border}` }}>
       <td style={{ padding: "12px 16px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: "rgba(99,102,241,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <UserIcon size={13} style={{ color: "#818cf8" }} />
           </div>
-          <span style={{ fontWeight: 500, color: t.text, fontSize: "13px" }}>{intern.name}</span>
+          <span style={{ fontWeight: 500, color: t.text }}>{intern.name}</span>
         </div>
       </td>
-      <td style={{ padding: "12px 16px", color: t.textMuted, fontSize: "13px" }}>{intern.email}</td>
-      <td style={{ padding: "12px 16px", color: t.textMuted, fontSize: "13px" }}>{intern.college || "—"}</td>
+      <td style={{ padding: "12px 16px", color: t.textMuted }}>{intern.email}</td>
+      <td style={{ padding: "12px 16px", color: t.textMuted }}>{intern.college || "—"}</td>
       <td style={{ padding: "12px 16px", textAlign: "right" }}>
         <button
           onClick={onAssign}
           onMouseEnter={() => setBtnHovered(true)}
           onMouseLeave={() => setBtnHovered(false)}
-          style={{
-            padding: "5px 14px", borderRadius: "8px", fontSize: "11px", fontWeight: 600,
-            background: btnHovered ? "rgba(99,102,241,0.22)" : "rgba(99,102,241,0.12)",
-            color: "#818cf8", border: "1px solid rgba(99,102,241,0.25)",
-            cursor: "pointer", transition: "background 0.15s", fontFamily: "'DM Sans', sans-serif",
-          }}
+          style={{ padding: "5px 14px", borderRadius: "8px", fontSize: "11px", fontWeight: 600, background: btnHovered ? "rgba(99,102,241,0.22)" : "rgba(99,102,241,0.12)", color: "#818cf8", border: "1px solid rgba(99,102,241,0.25)", cursor: "pointer", transition: "background 0.15s", fontFamily: "'DM Sans', sans-serif" }}
         >
           + Assign Task
         </button>
@@ -269,7 +185,6 @@ const InternRow = ({ intern, t, isLast, onAssign }) => {
   );
 };
 
-// ─── Stat card ────────────────────────────────────────────────────────────────
 const StatCard = ({ stat, t, loading }) => (
   <div style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: "12px", padding: "18px", transition: "background 0.3s", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>

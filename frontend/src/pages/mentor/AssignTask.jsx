@@ -12,23 +12,20 @@ const AssignTask = () => {
   const { state } = useLocation();
   const { isDark } = useTheme();
 
-  const internName    = state?.internName    || "Intern";
-  const programTitle  = state?.programTitle  || "Program";
+  const internName   = state?.internName   || "Intern";
+  const programTitle = state?.programTitle || "Program";
 
   const t = isDark
     ? { text: "#f9fafb", textMuted: "#6b7280", surface: "rgba(255,255,255,0.03)", border: "rgba(255,255,255,0.07)", fileBg: "rgba(255,255,255,0.03)", fileBorder: "rgba(255,255,255,0.08)", fileText: "#6b7280" }
     : { text: "#111827", textMuted: "#6b7280", surface: "rgba(255,255,255,0.85)", border: "rgba(0,0,0,0.08)", fileBg: "rgba(0,0,0,0.02)", fileBorder: "rgba(0,0,0,0.09)", fileText: "#9ca3af" };
 
-  const [form, setForm] = useState({ title: "", description: "", dueDate: "" });
-  const [file, setFile]     = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [form, setForm]         = useState({ title: "", description: "", dueDate: "" });
+  const [file, setFile]         = useState(null);
+  const [loading, setLoading]   = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
-  const handleFile = (f) => {
-    if (f) setFile(f);
-  };
+  const handleFile   = (f) => { if (f) setFile(f); };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,9 +39,8 @@ const AssignTask = () => {
       formData.append("programId",   programId);
       if (file) formData.append("file", file);
 
-      await api.post("/task/mentor", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      // Fixed: was "/mentor/assign-task" → correct path is "/tasks/mentor"
+      await api.post("/tasks/mentor", formData);
 
       toast.success(`Task assigned to ${internName}!`);
       setForm({ title: "", description: "", dueDate: "" });
@@ -59,7 +55,7 @@ const AssignTask = () => {
 
   return (
     <PageLayout backPath="/mentor" backLabel="Back to Dashboard">
-      {/* Context pill */}
+      {/* Context pills */}
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", marginBottom: "20px" }}>
         <span style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "#6366f1" }}>
           Assigning task to
@@ -106,6 +102,7 @@ const AssignTask = () => {
             required
           />
 
+          {/* File dropzone */}
           <div>
             <label style={{ fontSize: "12px", fontWeight: 500, color: t.textMuted, display: "block", marginBottom: "6px" }}>
               Reference File <span style={{ opacity: 0.6 }}>(optional)</span>
@@ -118,19 +115,15 @@ const AssignTask = () => {
                 border: `1px dashed ${dragOver ? "#6366f1" : t.fileBorder}`,
                 borderRadius: "10px", padding: "20px",
                 background: dragOver ? "rgba(99,102,241,0.06)" : t.fileBg,
-                textAlign: "center", cursor: "pointer",
-                transition: "all 0.15s",
+                textAlign: "center", cursor: "pointer", transition: "all 0.15s",
               }}
               onClick={() => document.getElementById("task-file").click()}
             >
               <input
-                id="task-file"
-                type="file"
-                style={{ display: "none" }}
+                id="task-file" type="file" style={{ display: "none" }}
                 accept=".pdf,.doc,.docx,.zip,.png,.jpg,.jpeg"
                 onChange={(e) => handleFile(e.target.files[0])}
               />
-
               {file ? (
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
                   <span style={{ fontSize: "13px", fontWeight: 500, color: "#818cf8" }}>{file.name}</span>

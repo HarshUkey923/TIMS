@@ -117,7 +117,6 @@ const Navbar = () => {
         )}
       </nav>
 
-      {/* Responsive helpers — inject once */}
       <style>{`
         @media (max-width: 640px) {
           .hidden-mobile { display: none !important; }

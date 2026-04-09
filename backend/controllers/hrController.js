@@ -64,30 +64,36 @@ export const GetInternByProgram = async (req, res) => {
 };
 
 export const AddIntern = async (req, res) => {
-    const { name, email, password, college, department, skills} = req.body;
-
-    if(!name || !email || !password || !college || !department || !skills){
-        return res.status(400).json({message: "Required fields missing."})
+    const { name, email, password, college, department, skills } = req.body;
+ 
+    if (!name || !email || !password || !college || !department || !skills) {
+        return res.status(400).json({ message: "Required fields missing." });
     }
-
-    const hashed = await bcrypt.hash(password, 10);
-
-    const intern = await Intern.create({
-        name,
-        email,
-        college,
-        department,
-        skills
-    });
-
-    const user = await User.create({
-        name,
-        email,
-        password: hashed,
-        role: "Intern"
-    });
-
-    res.status(201).json({ intern, user });
+ 
+    try {
+        const hashed = await bcrypt.hash(password, 10);
+ 
+        const user = await User.create({
+            name,
+            email,
+            password: hashed,
+            role: "Intern"
+        });
+ 
+        const intern = await Intern.create({
+            name,
+            email,
+            college,
+            department,
+            skills: skills.split(",").map((s) => s.trim()), 
+            userId: user._id,
+        });
+ 
+        res.status(201).json({ intern, user });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: error.message });
+    }
 };
 
 export const AssignInternToProgram = async (req, res) => {
@@ -114,27 +120,30 @@ export const AssignInternToProgram = async (req, res) => {
 };
 
 export const AddMentor = async (req, res) => {
-    const{ name, email, password, specialization} = req.body;
+    const { name, email, password, specialization } = req.body;
     try {
+        const hashed = await bcrypt.hash(password, 10);
+
+        const user = await User.create({
+            name,
+            email,
+            password: hashed,
+            role: "Mentor"
+        });
+
         const mentor = await Mentor.create({
-        name,
-        email,
-        specialization
-    });
+            name,
+            email,
+            specialization,
+            userId: user._id
+        });
 
-    const hashed = await bcrypt.hash(password, 10);
-
-    const user = await User.create({
-        name,
-        email,
-        password: hashed,
-        role: "Mentor"
-    });
-    res.status(201).json({ mentor, user})
+        res.status(201).json({ mentor, user });
     } catch (error) {
-        console.log(error)
+        console.log(error);
+        res.status(500).json({ message: error.message });
     }
-}
+};
 
 export const GetMentors = async (req, res) => {
     const mentor = await Mentor.find();

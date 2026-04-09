@@ -38,7 +38,7 @@ const Intern = new mongoose.Schema(
 
     mentorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
+      ref: "Mentor"        // fixed: was "User"
     },
 
     status: {
@@ -47,9 +47,7 @@ const Intern = new mongoose.Schema(
       default: "Active"
     }
   },
-  {
-    timestamps: true
-  }
+  { timestamps: true }
 );
 
 export default mongoose.model("Intern", Intern);
